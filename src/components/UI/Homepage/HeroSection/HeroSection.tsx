@@ -1,6 +1,6 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import Image from "next/image";
-import assets from "../../../assets/index";
+import assets from "../../../../assets/index";
 
 // SX is a Object Where We Can Use Raw CSS In MUI.
 const HeroSection = () => {
@@ -59,6 +59,7 @@ const HeroSection = () => {
           justifyContent: "center",
           position: "relative",
           mt: 0,
+          ml: 4,
         }}
       >
         <Box

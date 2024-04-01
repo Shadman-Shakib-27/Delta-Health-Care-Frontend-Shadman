@@ -45,7 +45,7 @@ const Footer = () => {
           py={3}
         >
           <Typography color="white">
-            &copy;2024 Delta Health Care By Shadman. All Rights Reserved.
+            &copy;2024 Delta Health Care. All Rights Reserved.
           </Typography>
 
           <Typography
@@ -63,6 +63,15 @@ const Footer = () => {
 
           <Typography color="white" component="p">
             Privacy Policy! Terms & Conditions.
+          </Typography>
+        </Stack>
+
+        <Stack direction="row" justifyContent="center">
+          <Typography color="white" sx={{ marginLeft: "70px" }}>
+            Developed By{" "}
+            <Box component="span" color="primary.main" fontWeight={600}>
+              Shadman
+            </Box>
           </Typography>
         </Stack>
       </Container>
