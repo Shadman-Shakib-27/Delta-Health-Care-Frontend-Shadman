@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@mui/material";
 import Provider from "@/lib/providers/Provider";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,12 @@ export default function RootLayout({
     <Provider>
       <html lang="en">
         <body className={inter.className}>
-          <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
+          <AppRouterCacheProvider>
+            <>
+              <Toaster position="top-center" />
+              {children}
+            </>
+          </AppRouterCacheProvider>
         </body>
       </html>
     </Provider>
