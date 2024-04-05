@@ -14,6 +14,8 @@ import Link from "next/link";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { patientLogin } from "@/services/actions/patientLogin";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { storeUserInfo } from "@/services/auth.services";
 
 export type TFormData = {
   email: string;
@@ -33,8 +35,11 @@ const LoginPage = () => {
     console.log(data);
     try {
       const res = await patientLogin(data);
-      console.log(res);
-      router.push("/");
+      if (res?.data?.accessToken) {
+        toast.success(res?.message);
+        storeUserInfo({ accessToken: res?.data?.accessToken });
+        router.push("/");
+      }
     } catch (err: any) {
       console.error(err.message);
     }
