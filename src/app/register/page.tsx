@@ -1,48 +1,52 @@
 "use client";
-import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 import assets from "@/assets";
 import Link from "next/link";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { modifyPayload } from "@/utils/modifyPayload";
 import { registerPatient } from "@/services/actions/registerPatient";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { storeUserInfo } from "@/services/auth.services";
 import { patientLogin } from "@/services/actions/patientLogin";
+import DeltaForm from "@/components/Forms/DeltaForm";
+import DeltaInput from "@/components/Forms/DeltaInput";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 // import { userLogin } from "@/services/actions/userLogin";
 // import { storeUserInfo } from "@/services/auth.services";
 
-interface IPatientData {
-  name: string;
-  email: string;
-  contactNumber: string;
-  address: string;
-}
+export const patientValidationSchema = z.object({
+  name: z.string().min(1, "Please Enter Your Name!"),
+  email: z.string().email("Please Enter a Valid Email Address!"),
+  contactNumber: z
+    .string()
+    .regex(/^\d{11}$/, "Please Provide a Valid Phone Number!"),
+  address: z.string().min(1, "Please Enter Your Address!"),
+});
 
-interface IPatientRegisterFormData {
-  password: string;
-  patient: IPatientData;
-}
+export const validationSchema = z.object({
+  password: z.string().min(6, "Must Be At Least 6 Characters"),
+  patient: patientValidationSchema,
+});
+
+export const defaultValues = {
+  password: "",
+  patient: {
+    name: "",
+    email: "",
+    contactNumber: "",
+    address: "",
+  },
+};
 
 const RegisterPage = () => {
   const router = useRouter();
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<IPatientRegisterFormData>();
+  const [error, setError] = useState("");
 
-  const onSubmit: SubmitHandler<IPatientRegisterFormData> = async (values) => {
+  const handleRegister = async (values: FieldValues) => {
     const data = modifyPayload(values);
     // console.log(data);
     try {
@@ -58,6 +62,10 @@ const RegisterPage = () => {
           storeUserInfo({ accessToken: result?.data?.accessToken });
           router.push("/");
         }
+      }
+      else {
+        setError(res.message);
+        // console.log(res);
       }
     } catch (err: any) {
       console.error(err.message);
@@ -98,57 +106,66 @@ const RegisterPage = () => {
               </Typography>
             </Box>
           </Stack>
+          
+          {error && (
+            <Box>
+              <Typography
+                sx={{
+                  backgroundColor: "red",
+                  padding: "1px",
+                  borderRadius: "2px",
+                  color: "white",
+                  marginTop: "5px",
+                }}
+              >
+                {error}
+              </Typography>
+            </Box>
+          )}
 
           <Box>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <DeltaForm
+              onSubmit={handleRegister}
+              resolver={zodResolver(validationSchema)}
+              defaultValues={defaultValues}
+            >
               <Grid container spacing={2} my={1}>
                 <Grid item md={12}>
-                  <TextField
+                  <DeltaInput
                     label="Name"
-                    variant="outlined"
-                    size="small"
                     fullWidth={true}
-                    {...register("patient.name")}
+                    name="patient.name"
                   />
                 </Grid>
                 <Grid item md={6}>
-                  <TextField
+                  <DeltaInput
                     label="Email"
                     type="email"
-                    variant="outlined"
-                    size="small"
                     fullWidth={true}
-                    {...register("patient.email")}
+                    name="patient.email"
                   />
                 </Grid>
                 <Grid item md={6}>
-                  <TextField
+                  <DeltaInput
                     label="Password"
                     type="password"
-                    variant="outlined"
-                    size="small"
                     fullWidth={true}
-                    {...register("password")}
+                    name="password"
                   />
                 </Grid>
                 <Grid item md={6}>
-                  <TextField
+                  <DeltaInput
                     label="Contact Number"
                     type="tel"
-                    variant="outlined"
-                    size="small"
                     fullWidth={true}
-                    {...register("patient.contactNumber")}
+                    name="patient.contactNumber"
                   />
                 </Grid>
                 <Grid item md={6}>
-                  <TextField
+                  <DeltaInput
                     label="Address"
-                    type="text"
-                    variant="outlined"
-                    size="small"
                     fullWidth={true}
-                    {...register("patient.address")}
+                    name="patient.address"
                   />
                 </Grid>
               </Grid>
@@ -173,7 +190,7 @@ const RegisterPage = () => {
                   </Box>
                 </Link>
               </Typography>
-            </form>
+            </DeltaForm>
           </Box>
         </Box>
       </Stack>

@@ -1,44 +1,39 @@
 "use client";
-import {
-  Box,
-  Button,
-  Container,
-  Grid,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 import assets from "@/assets";
 import Link from "next/link";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { FieldValues } from "react-hook-form";
 import { patientLogin } from "@/services/actions/patientLogin";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { storeUserInfo } from "@/services/auth.services";
+import DeltaForm from "@/components/Forms/DeltaForm";
+import DeltaInput from "@/components/Forms/DeltaInput";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useState } from "react";
 
-export type TFormData = {
-  email: string;
-  password: string;
-};
+export const validationSchema = z.object({
+  email: z.string().email("Please Enter a Valid Email Address!"),
+  password: z.string().min(6, "Must Be At Least 6 Characters"),
+});
 
 const LoginPage = () => {
   const router = useRouter();
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<TFormData>();
+  const [error, setError] = useState("");
 
-  const onSubmit: SubmitHandler<TFormData> = async (data) => {
-    console.log(data);
+  const handleLogin = async (values: FieldValues) => {
+    // console.log(values);
     try {
-      const res = await patientLogin(data);
+      const res = await patientLogin(values);
       if (res?.data?.accessToken) {
         toast.success(res?.message);
         storeUserInfo({ accessToken: res?.data?.accessToken });
-        router.push("/");
+        router.push("/dashboard");
+      } else {
+        setError(res.message);
+        // console.log(res);
       }
     } catch (err: any) {
       console.error(err.message);
@@ -79,27 +74,46 @@ const LoginPage = () => {
               </Typography>
             </Box>
           </Stack>
+          
+          {error && (
+            <Box>
+              <Typography
+                sx={{
+                  backgroundColor: "red",
+                  padding: "1px",
+                  borderRadius: "2px",
+                  color: "white",
+                  marginTop: "5px",
+                }}
+              >
+                {error}
+              </Typography>
+            </Box>
+          )}
 
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <DeltaForm
+            onSubmit={handleLogin}
+            resolver={zodResolver(validationSchema)}
+            defaultValues={{
+              email: "",
+              password: "",
+            }}
+          >
             <Box>
               <Grid container spacing={2} my={1}>
                 <Grid item md={6}>
-                  <TextField
+                  <DeltaInput
+                    name="email"
                     label="Email"
                     type="email"
-                    variant="outlined"
-                    size="small"
-                    {...register("email")}
                     fullWidth={true}
                   />
                 </Grid>
                 <Grid item md={6}>
-                  <TextField
+                  <DeltaInput
+                    name="password"
                     label="Password"
                     type="password"
-                    variant="outlined"
-                    {...register("password")}
-                    size="small"
                     fullWidth={true}
                   />
                 </Grid>
@@ -135,7 +149,7 @@ const LoginPage = () => {
                 Forgot Password?
               </Box>
             </Box>
-          </form>
+          </DeltaForm>
         </Box>
       </Stack>
     </Container>
